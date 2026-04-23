@@ -2,7 +2,7 @@
 # These are the "menu items" the website can order from our API
 # Each route is a URL the website can call
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from src.models import Campaign
 
 campaigns_bp = Blueprint("campaigns", __name__)
@@ -20,7 +20,17 @@ CAMPAIGNS = [
 
 @campaigns_bp.route("/api/campaigns", methods=["GET"])
 def get_all_campaigns():
-    """The website asks: 'Give me all campaigns.'"""
+    """The website asks: 'Give me campaigns, optionally filtered.'"""
+    
+    # Check if the website sent a portfolio filter
+    portfolio = request.args.get("portfolio")
+    
+    # If they asked for a specific portfolio, only return those
+    if portfolio:
+        filtered = [c for c in CAMPAIGNS if c.card_portfolio == portfolio]
+        return jsonify([c.to_dict() for c in filtered])
+    
+    # If no filter, return everything
     return jsonify([c.to_dict() for c in CAMPAIGNS])
 
 
